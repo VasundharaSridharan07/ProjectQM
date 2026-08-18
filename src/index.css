@@ -1,0 +1,90 @@
+@import '@trimble-oss/moduswebcomponents/modus-wc-styles.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+@import 'tailwindcss';
+
+:root {
+  --padding-card: 1rem;
+}
+
+body {
+  margin: 0;
+  background: var(--modus-wc-color-base-page);
+}
+
+p {
+  margin-bottom: 0;
+}
+
+modus-wc-card .modus-wc-card {
+  margin-bottom: var(--modus-wc-spacing-xl);
+}
+
+.app-shell {
+  height: 100vh;
+  background: var(--modus-wc-color-base-page);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.navbar-end {
+  display: flex;
+  align-items: center;
+  gap: var(--modus-wc-spacing-sm);
+}
+
+.maplibre-gl-map {
+  font: inherit;
+}
+
+.asset-icon img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.design-a {
+  background: var(--modus-wc-color-blue-pale);
+  border: 1px solid var(--modus-wc-color-info-blue);
+}
+
+.design-b {
+  background: var(--modus-wc-color-green-pale);
+  border: 1px solid var(--modus-wc-color-green);
+}
+
+.design-c {
+  background: var(--modus-wc-color-red-pale);
+  border: 1px solid var(--modus-wc-color-red);
+}
+
+.t-content {
+  color: var(--modus-wc-color-base-content);
+}
+
+.t-muted {
+  color: var(--modus-wc-color-base-content-low-contrast);
+}
+
+.t-gray {
+  color: var(--modus-wc-color-trimble-gray);
+}
+
+.t-blue {
+  color: var(--modus-wc-color-trimble-blue);
+}
+
+.t-green {
+  color: var(--modus-wc-color-green);
+}
+
+.t-on-image {
+  color: var(--modus-wc-color-base-100);
+}
+
+.t-gray-10 {
+  color: var(--modus-wc-color-gray-10);
+}
