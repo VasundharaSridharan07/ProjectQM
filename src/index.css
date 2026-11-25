@@ -33,6 +33,290 @@ modus-wc-card .modus-wc-card {
   gap: var(--modus-wc-spacing-sm);
 }
 
+/* Modus sets start and end to width: 50%. Hug the logo + project on the left,
+   and push the theme switcher, icons, and profile to the right edge. */
+.app-shell .modus-wc-navbar-start {
+  flex: 0 0 auto;
+  width: fit-content;
+}
+
+.app-shell modus-wc-navbar .modus-wc-navbar [slot='start'] {
+  gap: var(--modus-wc-spacing-sm);
+}
+
+/* Sidenav panel design comes later. Keep the hamburger, hide the empty drawer. */
+.app-shell modus-wc-navbar .modus-wc-navbar [slot='start'] .main-menu {
+  display: none;
+}
+
+/* Collapsed rail is 4rem. Modus sets this margin only after a toggle, so reserve it on first paint. */
+#app-main {
+  margin-left: 4rem;
+}
+
+/* Side nav fills the page row under the navbar. The host stays out of flow. */
+.app-shell modus-wc-side-navigation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  width: 0;
+  height: 100%;
+}
+
+.app-shell modus-wc-side-navigation .modus-wc-side-navigation {
+  height: 100%;
+  max-height: none;
+  background: var(--modus-wc-color-gray-9);
+  transition: none;
+}
+
+.app-shell modus-wc-side-navigation .modus-wc-side-navigation .side-navigation-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  background: var(--modus-wc-color-gray-9);
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--modus-wc-color-gray-9);
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav-hero {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.app-shell .side-nav-items {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--modus-wc-spacing-xs);
+}
+
+.app-shell .side-nav .side-nav-item {
+  box-sizing: border-box;
+  width: 16rem;
+  height: var(--modus-wc-size-lg);
+  min-height: var(--modus-wc-size-lg);
+}
+
+.app-shell .side-nav .modus-wc-btn.side-nav-item {
+  box-sizing: border-box;
+  width: 16rem;
+  height: var(--modus-wc-size-lg);
+  min-height: var(--modus-wc-size-lg);
+  justify-content: flex-start;
+  background: transparent;
+  color: var(--modus-wc-color-white);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding-inline: var(--modus-wc-spacing-md);
+}
+
+.app-shell .side-nav .modus-wc-btn.side-nav-item:not(.side-nav-item-selected):hover,
+.app-shell .side-nav .modus-wc-btn.side-nav-item:not(.side-nav-item-selected):active {
+  background: transparent;
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav .modus-wc-btn.side-nav-item-selected,
+.app-shell .side-nav .modus-wc-btn.side-nav-item-selected:hover,
+.app-shell .side-nav .modus-wc-btn.side-nav-item-selected:active {
+  background: #1b1a26;
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav-item-content {
+  display: flex;
+  align-items: center;
+  gap: var(--modus-wc-spacing-sm);
+  width: 100%;
+}
+
+.app-shell .side-nav-icon,
+.app-shell .side-nav-label,
+.app-shell .side-nav-label * {
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav .side-nav-icon,
+.app-shell .side-nav .side-nav-icon-active,
+.app-shell .side-nav .asset-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  flex: 0 0 1.5rem;
+}
+
+.app-shell .side-nav-label {
+  margin: 0;
+}
+
+.app-shell .side-nav-icon-active {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--modus-wc-color-yellow);
+  color: var(--modus-wc-color-trimble-gray);
+}
+
+.app-shell .side-nav-glyph img {
+  filter: brightness(0) invert(1);
+}
+
+.app-shell .side-nav-item-selected .side-nav-icon {
+  color: var(--modus-wc-color-yellow);
+}
+
+.app-shell .side-nav-item-selected .side-nav-glyph {
+  background-color: var(--modus-wc-color-yellow);
+  -webkit-mask-image: var(--side-nav-glyph);
+  mask-image: var(--side-nav-glyph);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  mask-mode: alpha;
+}
+
+.app-shell .side-nav-item-selected .side-nav-glyph img {
+  opacity: 0;
+  filter: none;
+}
+
+.app-shell .side-nav-map img,
+.app-shell .side-nav-globe img,
+.app-shell .side-nav-designs img,
+.app-shell .side-nav-devices img,
+.app-shell .side-nav-account img {
+  width: 100%;
+  height: 100%;
+}
+
+.app-shell .side-nav-divider {
+  margin: var(--modus-wc-spacing-sm) var(--modus-wc-spacing-md);
+  --modus-wc-divider-color: var(--modus-wc-color-gray-7);
+}
+
+.app-shell .side-nav-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--modus-wc-spacing-2xs);
+  padding: var(--modus-wc-spacing-lg) var(--modus-wc-spacing-md) var(--modus-wc-spacing-md);
+  text-align: center;
+}
+
+.app-shell .side-nav-logo {
+  filter: brightness(0) invert(1);
+  height: 1.75rem;
+  width: auto;
+}
+
+.app-shell .side-nav-footer-text {
+  margin: 0;
+  color: var(--modus-wc-color-gray-2);
+}
+
+.app-shell .side-nav-collapsed .side-nav-hero {
+  display: none;
+}
+
+.app-shell .side-nav-collapsed .side-nav-label {
+  display: none;
+}
+
+.app-shell .side-nav-collapsed .side-nav-footer-text {
+  display: none;
+}
+
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item {
+  width: 4rem;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item:not(.side-nav-item-selected),
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item:not(.side-nav-item-selected):hover,
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item:not(.side-nav-item-selected):active {
+  background: transparent;
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected,
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected:hover,
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected:active {
+  background: #1b1a26;
+  color: var(--modus-wc-color-white);
+}
+
+.app-shell .side-nav-collapsed .side-nav-item-content {
+  justify-content: center;
+  gap: 0;
+}
+
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected,
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected:hover,
+.app-shell .side-nav-collapsed .modus-wc-btn.side-nav-item-selected:active {
+  box-shadow: inset 3px 0 0 var(--modus-wc-color-yellow);
+}
+
+.app-shell .side-nav-collapsed .side-nav-item-selected .side-nav-icon,
+.app-shell .side-nav-collapsed .side-nav-icon-active {
+  color: var(--modus-wc-color-yellow);
+  background: transparent;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  flex: 0 0 1.5rem;
+}
+
+.app-shell .side-nav-collapsed .side-nav-divider {
+  margin-inline: var(--modus-wc-spacing-sm);
+}
+
+.app-shell .side-nav-collapsed .side-nav-footer {
+  display: none;
+}
+
+.app-shell .modus-wc-navbar-end {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+  width: fit-content;
+}
+
+/* Navbar paints borderless primary actions with a base-100 chip. Keep them ghost. */
+.app-shell modus-wc-navbar .modus-wc-navbar .modus-wc-btn.modus-wc-btn-borderless.modus-wc-btn-primary:not(.logo):not(.user-button) {
+  background: transparent;
+}
+
+.app-shell modus-wc-navbar .modus-wc-navbar .modus-wc-btn.modus-wc-btn-borderless.modus-wc-btn-primary:not(.logo):not(.user-button):hover,
+.app-shell modus-wc-navbar .modus-wc-navbar .modus-wc-btn.modus-wc-btn-borderless.modus-wc-btn-primary:not(.logo):not(.user-button):focus-visible,
+.app-shell modus-wc-navbar .modus-wc-navbar .modus-wc-btn.modus-wc-btn-borderless.modus-wc-btn-primary:not(.logo):not(.user-button).modus-wc-btn-active,
+.app-shell modus-wc-navbar .modus-wc-navbar .modus-wc-btn.modus-wc-btn-borderless.modus-wc-btn-primary:not(.logo):not(.user-button)[aria-pressed='true'] {
+  background: var(--modus-wc-color-base-200);
+}
+
 .maplibre-gl-map {
   font: inherit;
 }
@@ -44,6 +328,241 @@ modus-wc-card .modus-wc-card {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+.edit-toolbar modus-wc-tooltip,
+.measure-tool-panel modus-wc-tooltip {
+  display: inline-flex;
+  align-items: center;
+}
+
+.measure-tool-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  padding: 16px 6px;
+  background: var(--modus-wc-color-base-100);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  gap: 4px;
+}
+
+.measure-tool-panel modus-wc-button,
+.measure-tool-panel .modus-wc-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+}
+
+.measure-tool-panel modus-wc-divider {
+  align-self: center;
+  width: 24px;
+  height: 8px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.measure-tool-placeholder {
+  display: block;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--modus-wc-color-base-200);
+  border-radius: 2px;
+}
+
+.measure-tool-icon-slot {
+  position: relative;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.measure-tool-caret {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  pointer-events: none;
+}
+
+.quality-metrics-panel {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  height: 100%;
+  background: var(--modus-wc-color-base-100);
+  border-left: 1px solid var(--modus-wc-color-base-200);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.quality-metrics-header,
+.quality-metrics-footer,
+.quality-metrics-configure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--modus-wc-spacing-sm, 0.5rem);
+  padding: 0.5rem 1rem;
+}
+
+.quality-metrics-header {
+  border-bottom: 1px solid var(--modus-wc-color-base-200);
+}
+
+.quality-metrics-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--modus-wc-color-base-200);
+}
+
+.quality-metrics-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.qm-segment modus-wc-button {
+  flex: 1;
+  min-width: 0;
+}
+
+.qm-stop-bar {
+  display: flex;
+  flex-direction: column;
+  width: 16px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.qm-stop-bar > span {
+  flex: 1;
+  min-height: 28px;
+}
+
+.qm-swatch {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+}
+
+.qm-color-red {
+  background: var(--modus-wc-color-red-dark);
+}
+
+.qm-color-red-light {
+  background: var(--modus-wc-color-red-light);
+}
+
+.qm-color-green {
+  background: var(--modus-wc-color-green);
+}
+
+.qm-color-blue {
+  background: var(--modus-wc-color-primary);
+}
+
+.tree-item-highlight {
+  border-radius: 8px;
+  background: var(--modus-wc-color-blue-pale);
+}
+
+/* Unlayered: native button padding:0 beats Tailwind px-* on folder rows. */
+.tree-folder-row {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Unlayered so Modus button chrome does not beat the 16px eye/kebab columns. */
+.tree-eye-toggle,
+.tree-eye-toggle .modus-wc-btn,
+.tree-kebab-toggle,
+.tree-kebab-toggle .modus-wc-btn {
+  width: 1rem;
+  height: 1rem;
+  min-width: 1rem;
+  min-height: 1rem;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.timeline-device-row modus-wc-checkbox {
+  flex-shrink: 0;
+}
+
+.timeline-scroll {
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.timeline-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.timeline-name-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  border-right: 1px solid var(--modus-wc-color-gray-0);
+}
+
+.timeline-header-row .timeline-name-col {
+  z-index: 3;
+}
+
+.timeline-designs-panel {
+  width: 260px;
+  min-width: 260px;
+  min-height: 0;
+  flex-shrink: 0;
+  overflow: auto;
+  border-right: 1px solid var(--modus-wc-color-gray-0);
+  background: var(--modus-wc-color-base-100);
+}
+
+.timeline-designs-search {
+  width: 100%;
+}
+
+.timeline-icon-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 36px;
+  min-width: 36px;
+  border-right: 1px solid var(--modus-wc-color-gray-0);
+  background: var(--modus-wc-color-base-100);
+}
+
+.timeline-header-row .timeline-icon-col {
+  z-index: 3;
+  background: var(--modus-wc-color-gray-01);
+}
+
+.tree-item-menu,
+.save-options-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  min-width: 10rem;
+  margin-top: var(--modus-wc-spacing-2xs);
+  background: var(--modus-wc-color-base-100);
+  border-radius: var(--modus-wc-border-radius-md);
+  box-shadow: 0 4px 16px
+    color-mix(in srgb, var(--modus-wc-color-base-content) 18%, transparent);
+}
+
+.save-options-menu {
+  min-width: 14rem;
 }
 
 .design-a {
@@ -87,4 +606,156 @@ modus-wc-card .modus-wc-card {
 
 .t-gray-10 {
   color: var(--modus-wc-color-gray-10);
+}
+
+/* Daisy disabled uses --n at 20% opacity; keep filled primary as faded primary. */
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled.modus-wc-btn-disabled,
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled:disabled,
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled[disabled] {
+  background-color: var(--modus-wc-color-primary);
+  border-color: transparent;
+  color: var(--modus-wc-color-primary-content);
+  opacity: 0.4;
+}
+
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled.modus-wc-btn-disabled:hover,
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled:disabled:hover,
+modus-wc-button .modus-wc-btn-primary.modus-wc-btn-filled[disabled]:hover {
+  background-color: var(--modus-wc-color-primary);
+  border-color: transparent;
+  color: var(--modus-wc-color-primary-content);
+  opacity: 0.4;
+}
+
+/* Unlayered so the 104px disc wins over Modus/Daisy `img { max-width: 100% }`. */
+.map-axis-gizmo {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 104px;
+  height: 104px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+}
+
+.devices-page {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--modus-wc-spacing-md);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--modus-wc-spacing-lg);
+  background: var(--modus-wc-color-base-page);
+}
+
+.devices-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--modus-wc-spacing-lg);
+}
+
+.devices-page .devices-title {
+  margin: 0;
+  color: var(--modus-wc-color-base-content);
+}
+
+.devices-page modus-wc-text-input {
+  width: 360px;
+  max-width: 100%;
+}
+
+.devices-page .devices-search.modus-wc-text-input,
+.devices-page .devices-search.modus-wc-text-input:focus,
+.devices-page .devices-search.modus-wc-text-input:focus-within {
+  width: 100%;
+  border-style: solid;
+  border-width: 0 0 1px;
+  border-color: var(--modus-wc-color-base-content-low-contrast);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.devices-page .devices-search.modus-wc-text-input:focus-within {
+  outline: 2px solid var(--modus-wc-color-primary);
+  outline-offset: 2px;
+}
+
+.devices-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--modus-wc-spacing-sm);
+  margin-left: auto;
+}
+
+.devices-page modus-wc-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.devices-page modus-wc-table table.modus-wc-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.devices-page modus-wc-table table.modus-wc-table thead th {
+  background-color: var(--modus-wc-color-base-200);
+  color: var(--modus-wc-color-base-content);
+}
+
+.devices-page modus-wc-table table.modus-wc-table thead th.sortable:hover {
+  background-color: var(--modus-wc-color-base-200);
+}
+
+.devices-page modus-wc-table table.modus-wc-table tbody tr {
+  background-color: var(--modus-wc-color-base-100);
+  color: var(--modus-wc-color-base-content);
+}
+
+.devices-page modus-wc-table table.modus-wc-table .devices-col-icon {
+  width: 60px;
+  max-width: 60px;
+}
+
+.devices-page modus-wc-table table.modus-wc-table .devices-col-remote {
+  width: 86px;
+  max-width: 86px;
+}
+
+.devices-kind-sources {
+  display: none;
+}
+
+.devices-page .devices-kind-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  max-width: none;
+  object-fit: contain;
+}
+
+.devices-page .devices-remote-active {
+  color: var(--modus-wc-color-success);
+}
+
+.devices-page .devices-remote-warning {
+  color: var(--modus-wc-color-warning);
+}
+
+.devices-page .devices-remote-notreporting {
+  color: var(--modus-wc-color-base-content-low-contrast);
+}
+
+.devices-page modus-wc-table table.modus-wc-table .no-data-message {
+  color: var(--modus-wc-color-base-content-low-contrast);
+  font-size: var(--modus-wc-font-size-sm);
+  font-weight: var(--modus-wc-font-weight-normal);
+  text-align: left;
 }

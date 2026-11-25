@@ -8,8 +8,11 @@ import {
   DEMO_PITCH,
   DEMO_ZOOM,
   MACHINE_FEATURES,
+  ORTHO_RING_COORDS,
+  SURFACE_LINE_COORDS,
   satelliteStyle,
   streetsStyle,
+  terrainPolygonFromOverlays,
 } from '../data/mapConfig'
 import satelliteThumb from '../assets/satellite-thumb.png'
 import axisGizmo from '../assets/axis-gizmo.png'
@@ -37,6 +40,7 @@ type MapViewportProps = {
   basemap: 'satellite' | 'streets'
   overlays: OverlayState
   chromeInsetBottom?: number | string
+  chromeInsetLeft?: number
   onBasemapChange: (basemap: 'satellite' | 'streets') => void
   onMeasure: (label: string | null) => void
   measureLabel: string | null
@@ -66,6 +70,7 @@ export const MapViewport = forwardRef<MapHandle, MapViewportProps>(function MapV
     basemap,
     overlays,
     chromeInsetBottom = 12,
+    chromeInsetLeft = 0,
     onBasemapChange,
     onMeasure,
     measureLabel,
@@ -329,12 +334,12 @@ export const MapViewport = forwardRef<MapHandle, MapViewportProps>(function MapV
         </div>
       )}
       <div
-        className="pointer-events-none absolute inset-x-3 z-10 flex items-end justify-between"
-        style={{ bottom: chromeInsetBottom }}
+        className="pointer-events-none absolute right-3 z-10 flex items-end justify-between"
+        style={{ left: chromeInsetLeft + 12, bottom: chromeInsetBottom }}
       >
         <button
           type="button"
-          className="pointer-events-auto relative size-[72px] overflow-hidden rounded"
+          className="pointer-events-auto relative size-[72px] overflow-hidden rounded-[4px]"
           style={{
             border: '4px solid var(--modus-wc-color-base-100)',
             boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
@@ -355,7 +360,7 @@ export const MapViewport = forwardRef<MapHandle, MapViewportProps>(function MapV
             className="absolute inset-x-1 bottom-0 flex h-7 items-end justify-center pb-0.5"
             style={{
               background:
-                'linear-gradient(to bottom, transparent, color-mix(in srgb, var(--modus-wc-color-trimble-gray) 70%, transparent))',
+                'linear-gradient(to bottom, transparent, color-mix(in srgb, var(--modus-wc-color-trimble-gray) 25%, transparent) 50%, color-mix(in srgb, var(--modus-wc-color-trimble-gray) 70%, transparent))',
             }}
           >
             <ModusWcTypography
@@ -369,7 +374,7 @@ export const MapViewport = forwardRef<MapHandle, MapViewportProps>(function MapV
         </button>
         <button
           type="button"
-          className="pointer-events-auto size-20 overflow-hidden"
+          className="pointer-events-auto relative size-20 overflow-visible"
           aria-label="Reset north and 3D view"
           onClick={() =>
             mapRef.current?.easeTo({
@@ -379,12 +384,105 @@ export const MapViewport = forwardRef<MapHandle, MapViewportProps>(function MapV
             })
           }
         >
-          <img src={axisGizmo} alt="" width={80} height={80} className="size-full object-contain" />
+          <img
+            src={axisGizmo}
+            alt=""
+            width={104}
+            height={104}
+            className="map-axis-gizmo"
+          />
         </button>
       </div>
     </div>
   )
 })
+
+const PIN_SIZE = 54
+
+const pinModules = import.meta.glob('../assets/pins/*.svg', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
+function pinAssetUrl(name: string): string | undefined {
+  const target = name.toLowerCase()
+  for (const [path, url] of Object.entries(pinModules)) {
+    const base = path.split('/').pop()?.replace(/\.svg$/i, '').toLowerCase() ?? ''
+    const normalized = base.replace(/^exacavator_/, 'excavator_')
+    if (normalized === target) return url
+  }
+  return undefined
+}
+
+function rasterizePin(url: string, size: number, ratio: number): Promise<ImageData> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(size * ratio)
+      canvas.height = Math.round(size * ratio)
+      const context = canvas.getContext('2d')
+      if (!context) {
+        reject(new Error('Could not draw a map pin'))
+        return
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      resolve(context.getImageData(0, 0, canvas.width, canvas.height))
+    }
+    image.onerror = () => reject(new Error(`Could not load pin ${url}`))
+    image.src = url
+  })
+}
+
+let machinePinLoad: Promise<void> | null = null
+let machinePinGeneration = 0
+
+function ensureMachinePins(map: MapLibreMap): Promise<void> {
+  if (machinePinLoad) return machinePinLoad
+  const generation = machinePinGeneration
+  machinePinLoad = (async () => {
+    const ratio = window.devicePixelRatio || 1
+    const names = new Set<string>()
+    for (const machine of MACHINE_FEATURES) {
+      names.add(`${machine.kind}_${machine.status}`)
+    }
+    for (const name of names) {
+      if (generation !== machinePinGeneration) return
+      if (map.hasImage(name)) continue
+      const url = pinAssetUrl(name)
+      if (!url) continue
+      const image = await rasterizePin(url, PIN_SIZE, ratio)
+      if (generation !== machinePinGeneration || map.hasImage(name)) continue
+      map.addImage(name, image, { pixelRatio: ratio })
+    }
+    if (generation !== machinePinGeneration) return
+    if (!map.getSource('machines')) {
+      map.addSource('machines', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+    }
+    if (!map.getLayer('machine-pins')) {
+      map.addLayer({
+        id: 'machine-pins',
+        type: 'symbol',
+        source: 'machines',
+        layout: {
+          'icon-image': ['get', 'icon'],
+          'icon-size': 1,
+          'icon-anchor': 'bottom',
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      })
+    }
+  })().catch((error: unknown) => {
+    machinePinLoad = null
+    throw error
+  })
+  return machinePinLoad
+}
 
 function applyBasemap(
   map: MapLibreMap,
@@ -398,6 +496,8 @@ function applyBasemap(
     pitch: map.getPitch(),
     bearing: map.getBearing(),
   }
+  machinePinGeneration += 1
+  machinePinLoad = null
   map.setStyle(next === 'satellite' ? satelliteStyle() : streetsStyle())
   map.once('styledata', () => {
     map.jumpTo(camera)
@@ -412,17 +512,6 @@ function addDataLayers(map: MapLibreMap) {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] },
     })
-    map.addLayer({
-      id: 'machines-circles',
-      type: 'circle',
-      source: 'machines',
-      paint: {
-        'circle-radius': 7,
-        'circle-color': ['get', 'color'],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': tokenColor('--modus-wc-color-base-100'),
-      },
-    })
   }
   if (!map.getSource('terrain-poly')) {
     map.addSource('terrain-poly', {
@@ -430,16 +519,11 @@ function addDataLayers(map: MapLibreMap) {
       data: {
         type: 'Feature',
         properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [-107.34, 39.55],
-            [-107.30, 39.55],
-            [-107.30, 39.57],
-            [-107.34, 39.57],
-            [-107.34, 39.55],
-          ]],
-        },
+        geometry: terrainPolygonFromOverlays({
+          machines: MACHINE_FEATURES.map((machine) => machine.id),
+          surfaces: false,
+          ortho: true,
+        }),
       },
     })
     map.addLayer({
@@ -460,11 +544,7 @@ function addDataLayers(map: MapLibreMap) {
         properties: {},
         geometry: {
           type: 'LineString',
-          coordinates: [
-            [-107.345, 39.548],
-            [-107.323, 39.561],
-            [-107.305, 39.572],
-          ],
+          coordinates: SURFACE_LINE_COORDS,
         },
       },
     })
@@ -486,13 +566,7 @@ function addDataLayers(map: MapLibreMap) {
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: [[
-            [-107.335, 39.553],
-            [-107.312, 39.553],
-            [-107.312, 39.566],
-            [-107.335, 39.566],
-            [-107.335, 39.553],
-          ]],
+          coordinates: [ORTHO_RING_COORDS],
         },
       },
     })
@@ -552,21 +626,28 @@ function applyOverlays(map: MapLibreMap, overlays: OverlayState) {
   if (map.getLayer('ortho-fill')) {
     map.setLayoutProperty('ortho-fill', 'visibility', overlays.ortho ? 'visible' : 'none')
   }
-  const source = map.getSource('machines') as GeoJSONSource | undefined
-  if (!source) return
-  const colorFor = (kind: string) => {
-    if (kind === 'excavator') return tokenColor('--modus-wc-color-trimble-blue')
-    if (kind === 'compactor') return tokenColor('--modus-wc-color-yellow-dark')
-    return tokenColor('--modus-wc-color-green')
-  }
-  source.setData({
-    type: 'FeatureCollection',
-    features: MACHINE_FEATURES.filter((machine) => overlays.machines.includes(machine.id)).map(
-      (machine) => ({
-        type: 'Feature',
-        properties: { id: machine.id, label: machine.label, color: colorFor(machine.kind) },
-        geometry: { type: 'Point', coordinates: [machine.lng, machine.lat] },
-      }),
-    ),
+  const terrainSource = map.getSource('terrain-poly') as GeoJSONSource | undefined
+  terrainSource?.setData({
+    type: 'Feature',
+    properties: {},
+    geometry: terrainPolygonFromOverlays(overlays),
+  })
+  void ensureMachinePins(map).then(() => {
+    const source = map.getSource('machines') as GeoJSONSource | undefined
+    if (!source) return
+    source.setData({
+      type: 'FeatureCollection',
+      features: MACHINE_FEATURES.filter((machine) => overlays.machines.includes(machine.id)).map(
+        (machine) => ({
+          type: 'Feature',
+          properties: {
+            id: machine.id,
+            name: machine.name,
+            icon: `${machine.kind}_${machine.status}`,
+          },
+          geometry: { type: 'Point', coordinates: [machine.lng, machine.lat] },
+        }),
+      ),
+    })
   })
 }
