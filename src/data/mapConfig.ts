@@ -1,4 +1,5 @@
 import type { StyleSpecification } from 'maplibre-gl'
+import { PROJECT_DEVICES, type DeviceKind, type DeviceStatus } from './devices'
 
 export const DEMO_CENTER: [number, number] = [-107.323, 39.561]
 export const DEMO_ZOOM = 13.4
@@ -41,20 +42,136 @@ export function streetsStyle(): StyleSpecification {
 
 export type MachineFeature = {
   id: string
-  label: string
+  name: string
   lng: number
   lat: number
-  kind: 'excavator' | 'compactor' | 'dozer'
+  kind: DeviceKind
+  status: DeviceStatus
 }
 
-export const MACHINE_FEATURES: MachineFeature[] = [
-  { id: 'exc-01', label: 'Excavator 01', lng: -107.318, lat: 39.565, kind: 'excavator' },
-  { id: 'exc-02', label: 'Excavator 02', lng: -107.328, lat: 39.558, kind: 'excavator' },
-  { id: 'exc-03', label: 'Excavator 03', lng: -107.334, lat: 39.564, kind: 'excavator' },
-  { id: 'exc-04', label: 'Excavator 04', lng: -107.311, lat: 39.555, kind: 'excavator' },
-  { id: 'exc-05', label: 'Excavator 05', lng: -107.322, lat: 39.552, kind: 'excavator' },
-  { id: 'comp-01', label: 'Compactor 01', lng: -107.339, lat: 39.557, kind: 'compactor' },
-  { id: 'comp-02', label: 'Compactor 02', lng: -107.315, lat: 39.568, kind: 'compactor' },
-  { id: 'dozer-5000', label: 'Bulldozer 5000 Series', lng: -107.326, lat: 39.549, kind: 'dozer' },
-  { id: 'dozer-7000', label: 'Bulldozer 7000 Series', lng: -107.308, lat: 39.562, kind: 'dozer' },
+export const MACHINE_FEATURES: MachineFeature[] = PROJECT_DEVICES.map((device) => ({
+  id: device.id,
+  name: device.name,
+  lng: device.lng,
+  lat: device.lat,
+  kind: device.kind,
+  status: device.status,
+}))
+
+export const SURFACE_LINE_COORDS: [number, number][] = [
+  [-107.345, 39.548],
+  [-107.323, 39.561],
+  [-107.305, 39.572],
 ]
+
+export const ORTHO_RING_COORDS: [number, number][] = [
+  [-107.335, 39.553],
+  [-107.312, 39.553],
+  [-107.312, 39.566],
+  [-107.335, 39.566],
+  [-107.335, 39.553],
+]
+
+const TERRAIN_PAD = 0.004
+
+type TerrainSourceInput = {
+  machines: string[]
+  surfaces: boolean
+  ortho: boolean
+}
+
+export function terrainPolygonFromOverlays(input: TerrainSourceInput): {
+  type: 'Polygon'
+  coordinates: [number, number][][]
+} {
+  const points: [number, number][] = []
+  for (const machine of MACHINE_FEATURES) {
+    if (input.machines.includes(machine.id)) {
+      points.push([machine.lng, machine.lat])
+    }
+  }
+  if (input.surfaces) {
+    points.push(...SURFACE_LINE_COORDS)
+  }
+  if (input.ortho) {
+    points.push(...ORTHO_RING_COORDS)
+  }
+  const ring = expandRing(convexHull(points.length > 0 ? points : [DEMO_CENTER]))
+  return { type: 'Polygon', coordinates: [ring] }
+}
+
+function convexHull(points: [number, number][]): [number, number][] {
+  const unique: [number, number][] = []
+  const seen = new Set<string>()
+  for (const point of points) {
+    const key = `${point[0]},${point[1]}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    unique.push(point)
+  }
+  unique.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  if (unique.length === 1) {
+    const [lng, lat] = unique[0]
+    return [
+      [lng - TERRAIN_PAD, lat - TERRAIN_PAD],
+      [lng + TERRAIN_PAD, lat - TERRAIN_PAD],
+      [lng + TERRAIN_PAD, lat + TERRAIN_PAD],
+      [lng - TERRAIN_PAD, lat + TERRAIN_PAD],
+      [lng - TERRAIN_PAD, lat - TERRAIN_PAD],
+    ]
+  }
+  if (unique.length === 2) {
+    const [a, b] = unique
+    return [
+      [a[0], a[1]],
+      [b[0], b[1]],
+      [a[0], a[1]],
+    ]
+  }
+
+  const cross = (o: [number, number], a: [number, number], b: [number, number]) =>
+    (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+  const lower: [number, number][] = []
+  for (const point of unique) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+      lower.pop()
+    }
+    lower.push(point)
+  }
+  const upper: [number, number][] = []
+  for (let i = unique.length - 1; i >= 0; i -= 1) {
+    const point = unique[i]
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+      upper.pop()
+    }
+    upper.push(point)
+  }
+  lower.pop()
+  upper.pop()
+  const hull = [...lower, ...upper]
+  hull.push(hull[0])
+  return hull
+}
+
+function expandRing(ring: [number, number][]): [number, number][] {
+  const closed = ring.length > 1 && ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1]
+  const body = closed ? ring.slice(0, -1) : ring
+  if (body.length === 0) return ring
+  let cx = 0
+  let cy = 0
+  for (const [lng, lat] of body) {
+    cx += lng
+    cy += lat
+  }
+  cx /= body.length
+  cy /= body.length
+  const expanded = body.map(([lng, lat]) => {
+    const dx = lng - cx
+    const dy = lat - cy
+    const length = Math.hypot(dx, dy) || 1
+    return [lng + (dx / length) * TERRAIN_PAD, lat + (dy / length) * TERRAIN_PAD] as [number, number]
+  })
+  expanded.push(expanded[0])
+  return expanded
+}

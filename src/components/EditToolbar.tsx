@@ -1,4 +1,4 @@
-import { ModusWcButton } from '@trimble-oss/moduswebcomponents-react'
+import { ModusWcButton, ModusWcTooltip } from '@trimble-oss/moduswebcomponents-react'
 import { AssetIcon } from './AssetIcon'
 import orbitIcon from '../assets/orbit.svg'
 import caretIcon from '../assets/caret.svg'
@@ -40,7 +40,7 @@ export function EditToolbar({
 }: EditToolbarProps) {
   return (
     <div
-      className="flex h-10 items-center rounded-lg px-2"
+      className="edit-toolbar flex h-10 items-center rounded-lg px-2"
       style={{
         background: 'var(--modus-wc-color-base-100)',
         borderRadius: '8px',
@@ -123,18 +123,25 @@ export function EditToolbar({
       </ModusWcButton>
       <AssetIcon src={caretIcon} size={16} />
       <Divider />
-      <ModusWcButton
-        color="tertiary"
-        variant={tool === 'measure' ? 'filled' : 'borderless'}
-        shape="square"
-        size="sm"
-        type="button"
-        aria-label="Measure"
-        aria-pressed={tool === 'measure'}
-        onButtonClick={() => onToolChange('measure')}
+      <ModusWcTooltip
+        content="Measure"
+        position="bottom"
+        tooltipId="measure-tool-tooltip"
       >
-        <AssetIcon src={measureXIcon} size={16} />
-      </ModusWcButton>
+        <ModusWcButton
+          color="tertiary"
+          variant={tool === 'measure' ? 'filled' : 'borderless'}
+          shape="square"
+          size="sm"
+          type="button"
+          aria-label="Measure"
+          aria-describedby="measure-tool-tooltip"
+          aria-pressed={tool === 'measure'}
+          onButtonClick={() => onToolChange('measure')}
+        >
+          <AssetIcon src={measureXIcon} size={16} />
+        </ModusWcButton>
+      </ModusWcTooltip>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import {
   ModusWcButton,
   ModusWcNavbar,
@@ -10,23 +10,56 @@ import headerCaret from '../assets/header-caret.svg'
 
 const PROJECTS = ['Augie Project', 'Glenwood Corridor']
 
+/** Filled Modus `info` glyph (solid info.svg). The navbar help control hardcodes a question mark. */
+const INFO_ICON_PATH =
+  'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1.06 14.15c0 .55-.45 1-1 1s-1-.45-1-1v-4.14c0-.55.45-1 1-1s1 .45 1 1zm-1-7.11c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1'
+
+function applyHelpInfoIcon(navbar: Element) {
+  const svg = navbar.querySelector('button[aria-label="Help"] svg')
+  const path = svg?.querySelector('path')
+  if (!svg || !path || svg.getAttribute('data-icon') === 'info-solid') return
+  path.setAttribute('d', INFO_ICON_PATH)
+  svg.setAttribute('class', 'mi-solid mi-info')
+  svg.setAttribute('data-icon', 'info-solid')
+}
+
 type AppHeaderProps = {
   projectName: string
   onProjectChange: (name: string) => void
+  mainMenuOpen: boolean
+  onMainMenuOpenChange: (open: boolean) => void
 }
 
-export function AppHeader({ projectName, onProjectChange }: AppHeaderProps) {
+export function AppHeader({
+  projectName,
+  onProjectChange,
+  mainMenuOpen,
+  onMainMenuOpenChange,
+}: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+
+  useLayoutEffect(() => {
+    const navbar = document.querySelector('modus-wc-navbar')
+    if (!navbar) return
+    applyHelpInfoIcon(navbar)
+    const observer = new MutationObserver(() => applyHelpInfoIcon(navbar))
+    observer.observe(navbar, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <ModusWcNavbar
       logoName="worksmanager"
+      mainMenuOpen={mainMenuOpen}
+      onMainMenuOpenChange={(event: CustomEvent<boolean>) =>
+        onMainMenuOpenChange(Boolean(event.detail))
+      }
       visibility={{
         ai: true,
         apps: true,
         help: true,
         logo: true,
-        mainMenu: false,
+        mainMenu: true,
         notifications: false,
         search: true,
         searchInput: false,
@@ -34,18 +67,7 @@ export function AppHeader({ projectName, onProjectChange }: AppHeaderProps) {
       }}
       userCard={{ name: 'VS', email: 'vs@trimble.com' }}
     >
-      <div slot="center" className="flex items-center gap-3">
-        <ModusWcTypography
-          hierarchy="p"
-          size="lg"
-          weight="normal"
-          customClass="t-content"
-          label="WorksManager"
-        />
-        <div
-          className="h-8 w-px"
-          style={{ background: 'var(--modus-wc-color-base-200)' }}
-        />
+      <div slot="start" className="flex items-center gap-3">
         <div className="relative">
           <ModusWcButton
             color="tertiary"
